@@ -133,8 +133,8 @@
                 
                 const valueCell = document.createElement('td');
                 valueCell.className = 'p-3 text-slate-700';
-                valueCell.textContent = formatValue(value);
-                
+                valueCell.innerHTML = formatValue(value)  ;
+
                 row.appendChild(keyCell);
                 row.appendChild(valueCell);
                 tableBody.appendChild(row);
