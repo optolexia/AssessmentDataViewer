@@ -21,7 +21,7 @@
             <textarea 
                 id="jsonInput" 
                 class="w-full h-64 p-4 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent font-mono text-sm resize-none"
-                placeholder='{ "name": "John", "age": 30, "city": "New York" }'
+                placeholder='{ "name": "John", "age": 30, "address": { "city": "New York" } }'
             ></textarea>
             
             <div id="errorMessage" class="mt-2 text-sm text-red-600 hidden"></div>
@@ -103,15 +103,32 @@
             inputView.classList.remove('hidden');
         });
 
-        function displayTable(obj) {
-            tableBody.innerHTML = '';
+        function flattenObject(obj, prefix = '') {
+            const flattened = {};
             
             for (const [key, value] of Object.entries(obj)) {
+                const newKey = prefix ? `${prefix}.${key}` : key;
+                
+                if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
+                    Object.assign(flattened, flattenObject(value, newKey));
+                } else {
+                    flattened[newKey] = value;
+                }
+            }
+            
+            return flattened;
+        }
+
+        function displayTable(obj) {
+            tableBody.innerHTML = '';
+            const flattened = flattenObject(obj);
+            
+            for (const [key, value] of Object.entries(flattened)) {
                 const row = document.createElement('tr');
                 row.className = 'border-b border-slate-100 hover:bg-slate-50 transition-colors';
                 
                 const keyCell = document.createElement('td');
-                keyCell.className = 'p-3 font-medium text-slate-900';
+                keyCell.className = 'p-3 font-medium text-slate-900 font-mono text-sm';
                 keyCell.textContent = key;
                 
                 const valueCell = document.createElement('td');
@@ -127,6 +144,8 @@
         function formatValue(value) {
             if (value === null) return 'null';
             if (value === undefined) return 'undefined';
+            if (value === '') return '(empty string)';
+            if (Array.isArray(value)) return JSON.stringify(value);
             if (typeof value === 'object') return JSON.stringify(value);
             return String(value);
         }
