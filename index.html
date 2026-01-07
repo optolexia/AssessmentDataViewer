@@ -12,7 +12,7 @@
     </style>
 </head>
 <body class="bg-slate-50 min-h-screen p-8">
-    <div class="max-w-4xl mx-auto">
+    <div class="max-w-6xl mx-auto">
         <!-- Input View -->
         <div id="inputView" class="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
             <h1 class="text-2xl font-semibold text-slate-900 mb-4">Result visualizer</h1>
@@ -142,7 +142,7 @@
                     valueCell.textContent = formatValue(value.value)  ;
                 }else{
                     const iframe = document.createElement('iframe');
-                    iframe.style.height = '350px';
+                    iframe.style.height = '400px';
                     iframe.style.width = '100%';
                     iframe.style.border = 'none';
                     iframe.title = 'Visualisation'
