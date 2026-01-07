@@ -1,10 +1,164 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>My Page</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON to Table Parser</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+    </style>
 </head>
-<body>
-  <h1>Hello World edited</h1>
+<body class="bg-slate-50 min-h-screen p-8">
+    <div class="max-w-4xl mx-auto">
+        <!-- Input View -->
+        <div id="inputView" class="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+            <h1 class="text-2xl font-semibold text-slate-900 mb-4">JSON Parser</h1>
+            <p class="text-sm text-slate-600 mb-4">Paste your JSON object below:</p>
+            
+            <textarea 
+                id="jsonInput" 
+                class="w-full h-64 p-4 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent font-mono text-sm resize-none"
+                placeholder='{ "name": "John", "age": 30, "address": { "city": "New York" } }'
+            ></textarea>
+            
+            <div id="errorMessage" class="mt-2 text-sm text-red-600 hidden"></div>
+            
+            <button 
+                id="showResultBtn"
+                class="mt-4 px-6 py-2 bg-slate-900 text-white rounded-md hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:ring-offset-2 transition-colors"
+            >
+                Show Result
+            </button>
+        </div>
+
+        <!-- Result View -->
+        <div id="resultView" class="bg-white rounded-lg shadow-sm border border-slate-200 p-6 hidden">
+            <div class="flex justify-between items-center mb-4">
+                <h1 class="text-2xl font-semibold text-slate-900">Result</h1>
+                <button 
+                    id="clearBtn"
+                    class="px-4 py-2 border border-slate-300 text-slate-700 rounded-md hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:ring-offset-2 transition-colors"
+                >
+                    Clear
+                </button>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full border-collapse">
+                    <thead>
+                        <tr class="border-b border-slate-200">
+                            <th class="text-left p-3 font-semibold text-slate-900 bg-slate-50">Key</th>
+                            <th class="text-left p-3 font-semibold text-slate-900 bg-slate-50">Value</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const inputView = document.getElementById('inputView');
+        const resultView = document.getElementById('resultView');
+        const jsonInput = document.getElementById('jsonInput');
+        const showResultBtn = document.getElementById('showResultBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const tableBody = document.getElementById('tableBody');
+        const errorMessage = document.getElementById('errorMessage');
+
+        showResultBtn.addEventListener('click', () => {
+            const jsonText = jsonInput.value.trim();
+            
+            if (!jsonText) {
+                showError('Please enter some JSON data');
+                return;
+            }
+
+            try {
+                const jsonObj = JSON.parse(jsonText);
+                
+                if (typeof jsonObj !== 'object' || jsonObj === null) {
+                    showError('Please enter a valid JSON object');
+                    return;
+                }
+
+                hideError();
+                displayTable(jsonObj);
+                inputView.classList.add('hidden');
+                resultView.classList.remove('hidden');
+            } catch (e) {
+                showError('Invalid JSON format: ' + e.message);
+            }
+        });
+
+        clearBtn.addEventListener('click', () => {
+            jsonInput.value = '';
+            tableBody.innerHTML = '';
+            hideError();
+            resultView.classList.add('hidden');
+            inputView.classList.remove('hidden');
+        });
+
+        function flattenObject(obj, prefix = '') {
+            const flattened = {};
+            
+            for (const [key, value] of Object.entries(obj)) {
+                const newKey = prefix ? `${prefix}.${key}` : key;
+                
+                if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
+                    Object.assign(flattened, flattenObject(value, newKey));
+                } else {
+                    flattened[newKey] = value;
+                }
+            }
+            
+            return flattened;
+        }
+
+        function displayTable(obj) {
+            tableBody.innerHTML = '';
+            const flattened = flattenObject(obj);
+            
+            for (const [key, value] of Object.entries(flattened)) {
+                const row = document.createElement('tr');
+                row.className = 'border-b border-slate-100 hover:bg-slate-50 transition-colors';
+                
+                const keyCell = document.createElement('td');
+                keyCell.className = 'p-3 font-medium text-slate-900 font-mono text-sm';
+                keyCell.textContent = key;
+                
+                const valueCell = document.createElement('td');
+                valueCell.className = 'p-3 text-slate-700';
+                valueCell.textContent = formatValue(value);
+                
+                row.appendChild(keyCell);
+                row.appendChild(valueCell);
+                tableBody.appendChild(row);
+            }
+        }
+
+        function formatValue(value) {
+            if (value === null) return 'null';
+            if (value === undefined) return 'undefined';
+            if (value === '') return '(empty string)';
+            if (Array.isArray(value)) return JSON.stringify(value);
+            if (typeof value === 'object') return JSON.stringify(value);
+            return String(value);
+        }
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.classList.remove('hidden');
+        }
+
+        function hideError() {
+            errorMessage.classList.add('hidden');
+            errorMessage.textContent = '';
+        }
+    </script>
 </body>
 </html>
