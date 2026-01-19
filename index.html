@@ -36,6 +36,12 @@
         >
             Show Result
         </button>
+        <button
+                id="showSampleResultBtn"
+                class="mt-4 px-6 py-2 bg-slate-900 text-white rounded-md hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:ring-offset-2 transition-colors"
+        >
+            Show example result
+        </button>
     </div>
 
     <!-- Result View -->
@@ -70,9 +76,25 @@
     const resultView = document.getElementById('resultView');
     const jsonInput = document.getElementById('jsonInput');
     const showResultBtn = document.getElementById('showResultBtn');
+    const showSampleResultBtn = document.getElementById('showSampleResultBtn');
     const clearBtn = document.getElementById('clearBtn');
     const tableBody = document.getElementById('tableBody');
     const errorMessage = document.getElementById('errorMessage');
+
+    showSampleResultBtn.addEventListener('click', async () => {
+
+        try {
+            const response = await fetch('/resultSample.json');
+
+            const jsonObj = await response.json();
+            hideError();
+            displayTable(jsonObj);
+            inputView.classList.add('hidden');
+            resultView.classList.remove('hidden');
+        } catch (e) {
+            showError('Invalid JSON format: ' + e.message);
+        }
+    });
 
     showResultBtn.addEventListener('click', () => {
         const jsonText = jsonInput.value.trim();
